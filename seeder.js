@@ -7,8 +7,11 @@ import Product from "./models/product.model.js";
 import User from "./models/user.model.js";
 import { hashPassword } from "./utils/password.utils.js";
 import { products } from "../ceramic-frontend/src/data/productsData.js";
+import cloudinaryConfig from "./config/cloudinary.config.js";
+import uploadOnCloudinary from "./utils/cloudinary.utils.js";
 
 dotenv.config({ path: "./env/.env" });
+cloudinaryConfig();
 
 async function seed() {
   try {
@@ -25,19 +28,34 @@ async function seed() {
     console.log("Dropping existing products collection to reset indexes...");
     await Product.collection.drop().catch(() => {});
 
-    console.log("Mapping and seeding products from frontend data...");
-    const mappedProducts = products.map((p) => ({
-      _id:         p.id,
-      name:        p.name,
-      price:       p.price,
-      salePrice:   p.salePrice || null,
-      category:    p.category,
-      image:       p.image,
-      hoverImage:  p.hoverImage || null,
-      description: p.description || "",
-      details:     p.details || null,
-      inStock:     p.inStock !== undefined ? p.inStock : true,
-    }));
+    console.log("Mapping and seeding products from frontend data, uploading to Cloudinary...");
+    const mappedProducts = [];
+    for (const p of products) {
+      console.log(`Uploading images to Cloudinary for product "${p.id}"...`);
+      let imageUrl = p.image;
+      if (p.image) {
+        const res = await uploadOnCloudinary(p.image);
+        if (res) imageUrl = res.secure_url;
+      }
+      let hoverImageUrl = p.hoverImage || null;
+      if (p.hoverImage) {
+        const res = await uploadOnCloudinary(p.hoverImage);
+        if (res) hoverImageUrl = res.secure_url;
+      }
+
+      mappedProducts.push({
+        _id:         p.id,
+        name:        p.name,
+        price:       p.price,
+        salePrice:   p.salePrice || null,
+        category:    p.category,
+        image:       imageUrl,
+        hoverImage:  hoverImageUrl,
+        description: p.description || "",
+        details:     p.details || null,
+        inStock:     p.inStock !== undefined ? p.inStock : true,
+      });
+    }
 
     const seededProducts = await Product.insertMany(mappedProducts);
     console.log(`Successfully seeded ${seededProducts.length} products`);
