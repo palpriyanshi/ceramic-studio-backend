@@ -1,0 +1,111 @@
+/api/v1/admin/products:
+  post:
+    summary: Create a product
+    tags: [Admin - Products]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Product' }
+    responses:
+      201:
+        description: Product created
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Product' }
+      400:
+        description: title and price are required
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiError' }
+
+/api/v1/admin/products/bulk-delete:
+  delete:
+    summary: Bulk delete products by IDs or category
+    tags: [Admin - Products]
+    security:
+      - cookieAuth: []
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ids:      { type: array, items: { type: string } }
+              category: { type: string }
+    responses:
+      200:
+        description: Products deleted
+      400:
+        description: Provide ids[] or category
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiError' }
+
+/api/v1/admin/products/{id}:
+  put:
+    summary: Full update a product
+    tags: [Admin - Products]
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Product' }
+    responses:
+      200:
+        description: Updated product
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Product' }
+      404:
+        description: Product not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiError' }
+  patch:
+    summary: Partial update a product
+    tags: [Admin - Products]
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    requestBody:
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Product' }
+    responses:
+      200:
+        description: Patched product
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Product' }
+  delete:
+    summary: Delete a product
+    tags: [Admin - Products]
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    responses:
+      200:
+        description: Product deleted
+      404:
+        description: Product not found
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiError' }

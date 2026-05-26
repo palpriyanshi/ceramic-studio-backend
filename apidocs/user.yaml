@@ -1,0 +1,91 @@
+/api/v1/users/me:
+  get:
+    summary: Get own profile
+    tags: [User - Profile]
+    security:
+      - cookieAuth: []
+    responses:
+      200:
+        description: Current user profile
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      401:
+        description: Not authenticated
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiError' }
+  patch:
+    summary: Update own name / email
+    tags: [User - Profile]
+    security:
+      - cookieAuth: []
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:  { type: string }
+              email: { type: string }
+    responses:
+      200:
+        description: Updated profile
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+  delete:
+    summary: Delete own account
+    tags: [User - Profile]
+    security:
+      - cookieAuth: []
+    responses:
+      200:
+        description: Account deleted
+
+/api/v1/users/me/avatar:
+  patch:
+    summary: Upload a new profile image
+    tags: [User - Profile]
+    security:
+      - cookieAuth: []
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              avatar:
+                type: string
+                format: binary
+    responses:
+      200:
+        description: Avatar updated
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+
+/api/v1/users/me/change-password:
+  patch:
+    summary: Change own password
+    tags: [User - Profile]
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [currentPassword, newPassword]
+            properties:
+              currentPassword: { type: string }
+              newPassword:     { type: string, minLength: 6 }
+    responses:
+      200:
+        description: Password updated
+      401:
+        description: Current password incorrect
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApiError' }
