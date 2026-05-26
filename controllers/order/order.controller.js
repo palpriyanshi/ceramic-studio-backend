@@ -14,6 +14,7 @@ import Product from "../../models/product.model.js";
 import asyncHandler from "../../utils/asyncHandler.utils.js";
 import ApiError from "../../utils/errorHandler.utils.js";
 import { getPaginationParams, paginate } from "../../utils/pagination.utils.js";
+import { sendOrderConfirmationEmail } from "../../config/nodemailer.config.js";
 
 const VALID_STATUSES = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "refunded"];
 
@@ -58,8 +59,12 @@ export const createOrder = asyncHandler(async (req, res) => {
     itemsTotal, shippingCharge, discount, grandTotal,
   });
 
+  // Fire-and-forget — email failure must NOT delay the customer's 201 response
+  sendOrderConfirmationEmail(shippingAddress.email, order).catch(() => {});
+
   res.status(201).json(order);
 });
+
 
 export const getMyOrders = asyncHandler(async (req, res) => {
   const { page, limit, skip } = getPaginationParams(req, { limit: 10 });
