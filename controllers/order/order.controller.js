@@ -60,7 +60,9 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 
   // Fire-and-forget — email failure must NOT delay the customer's 201 response
-  sendOrderConfirmationEmail(shippingAddress.email, order).catch(() => {});
+  sendOrderConfirmationEmail(shippingAddress.email, order).catch((err) => {
+    console.error("⚠️  Order confirmation email error:", err.message);
+  });
 
   res.status(201).json(order);
 });

@@ -68,17 +68,14 @@ export async function sendWelcomeEmail(to, name) {
     });
     console.log(`✅ Welcome email sent to ${to} — MessageId: ${info.messageId}`);
   } catch (err) {
-    // Enrich the error with context before re-throwing
-    const enriched = new Error(
-      `sendWelcomeEmail failed for "${to}": ${err.message}\n` +
-        `  SMTP_HOST : ${process.env.SMTP_HOST}\n` +
-        `  SMTP_PORT : ${process.env.SMTP_PORT}\n` +
-        `  SMTP_USER : ${process.env.SMTP_USER}\n` +
-        `  Error code: ${err.code || "N/A"}\n` +
-        `  Response  : ${err.response || "N/A"}`
+    // Log but don't re-throw — welcome email failure must NOT block registration
+    console.error(
+      `⚠️  sendWelcomeEmail failed for "${to}": ${err.message}\n` +
+      `   SMTP_HOST : ${process.env.SMTP_HOST}\n` +
+      `   SMTP_USER : ${process.env.SMTP_USER}\n` +
+      `   Error code: ${err.code || "N/A"}\n` +
+      `   Response  : ${err.response || "N/A"}`
     );
-    enriched.stack = err.stack;
-    throw enriched;
   }
 }
 
